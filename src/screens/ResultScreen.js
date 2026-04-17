@@ -1,14 +1,31 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useWardrobe } from '../context/WardrobeContext';
 import { useWeather } from '../hooks/useWeather';
 import { ClothCard } from '../components/ClothCard';
+import { getOutfitRecommendation } from '../services/aiService';
 import { COLORS, SPACING, TYPOGRAPHY, RADIUS } from '../theme';
 
 export function ResultScreen() {
   const { clothes } = useWardrobe();
   const { weather } = useWeather();
-  const outfit = clothes.slice(0, 3);
+  const [recommendation, setRecommendation] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!weather || clothes.length === 0) return;
+    setLoading(true);
+    setError(null);
+    getOutfitRecommendation(weather, clothes)
+      .then((result) => setRecommendation(result))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [weather, clothes]);
+
+  const outfit = recommendation
+    ? clothes.filter((c) => recommendation.outfit.includes(c.name))
+    : [];
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -30,9 +47,15 @@ export function ResultScreen() {
             <View style={styles.aiDot} />
             <Text style={styles.aiTitle}>Recommandation IA</Text>
           </View>
-          <Text style={styles.aiText}>
-            Version démo — connectez l'API Rima pour les vraies recommandations.
-          </Text>
+          {loading ? (
+            <ActivityIndicator color={COLORS.primary} style={{ marginTop: SPACING.sm }} />
+          ) : error ? (
+            <Text style={styles.aiText}>Erreur : {error}</Text>
+          ) : recommendation ? (
+            <Text style={styles.aiText}>{recommendation.explanation}</Text>
+          ) : (
+            <Text style={styles.aiText}>Chargement de la météo…</Text>
+          )}
         </View>
 
         <Text style={styles.sectionLabel}>Votre tenue du jour</Text>

@@ -20,7 +20,7 @@ export function ClothCard({ cloth, onDelete }) {
   return (
     <View style={styles.card}>
       {/* Emoji */}
-      <View style={styles.emojiBox}>
+      <View style={[styles.emojiBox, { backgroundColor: colorHex + '40' }]}>
         <Text style={styles.emoji}>{emoji}</Text>
       </View>
 
