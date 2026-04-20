@@ -2,6 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import * as Location from "expo-location";
 import { fetchWeather } from "../services/weatherService";
 
+const PARIS_COORDS = {
+  latitude: 48.8566,
+  longitude: 2.3522,
+};
+
 export function useWeather() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,25 +19,27 @@ export function useWeather() {
       setError(null);
 
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        throw new Error(
-          "Permission de localisation refusée. Activez-la dans les réglages.",
-        );
-      }
+      let latitude = PARIS_COORDS.latitude;
+      let longitude = PARIS_COORDS.longitude;
 
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-      const { latitude, longitude } = location.coords;
+      if (status === "granted") {
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        latitude = location.coords.latitude;
+        longitude = location.coords.longitude;
 
-      const [place] = await Location.reverseGeocodeAsync({
-        latitude,
-        longitude,
-      });
-      if (place) {
-        setLocationName(
-          place.city || place.subregion || place.region || "Position actuelle",
-        );
+        const [place] = await Location.reverseGeocodeAsync({
+          latitude,
+          longitude,
+        });
+        if (place) {
+          setLocationName(
+            place.city || place.subregion || place.region || "Position actuelle",
+          );
+        }
+      } else {
+        setLocationName("Paris");
       }
 
       const data = await fetchWeather(latitude, longitude);

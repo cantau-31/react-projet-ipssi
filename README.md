@@ -33,7 +33,7 @@ Smart Wardrobe Assistant résout un problème du quotidien : savoir quoi porter 
 react-projet-ipssi/
 ├── App.js                          # Point d'entrée, navigation par onglets
 ├── babel.config.js                 # Configuration Babel + react-native-dotenv
-├── app.json                        # Configuration Expo + permissions GPS
+├── app.json                        # Configuration Expo (nom, splash, icônes, orientation)
 ├── .env                            # Variables d'environnement (non commité)
 ├── .env.example                    # Template .env
 ├── .gitignore
@@ -88,7 +88,7 @@ Responsable de la communication avec les services externes et la configuration d
 
 **Fichiers produits :**
 - `babel.config.js` — Configuration Babel avec `react-native-dotenv`
-- `app.json` — Configuration Expo avec permissions GPS iOS/Android
+- `app.json` — Configuration Expo (nom, orientation, splash, icônes)
 - `.env.example` — Template des variables d'environnement
 - `.gitignore` — Exclusion du `.env` et des fichiers sensibles
 - `src/services/weatherService.js` — Intégration API Open-Meteo (gratuit, sans clé)
@@ -151,12 +151,13 @@ cp .env.example .env
 
 ```env
 # Clé API Mistral AI
-IA_API_KEY=votre_cle_api_ici
+IA_API_KEY=your_mistral_api_key_here
 
 # URL météo (laisser tel quel)
 WEATHER_API_URL=https://api.open-meteo.com
 ```
 
+> Si vous laissez `IA_API_KEY=your_mistral_api_key_here`, l'application fonctionne en mode local (sans appel à Mistral).
 > Ne jamais commiter le fichier `.env` — il est déjà dans `.gitignore`
 
 ### 4. Lancer l'application

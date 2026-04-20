@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { getClothes, saveClothes } from '../services/storageService';
 
 const WardrobeContext = createContext(null);
 
@@ -10,8 +11,43 @@ const DEMO_CLOTHES = [
 
 export function WardrobeProvider({ children }) {
   const [clothes, setClothes] = useState(DEMO_CLOTHES);
-  const addCloth = (cloth) => setClothes([...clothes, { ...cloth, id: Date.now().toString() }]);
-  const removeCloth = (id) => setClothes(clothes.filter((c) => c.id !== id));
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    const hydrateWardrobe = async () => {
+      try {
+        const storedClothes = await getClothes();
+        if (storedClothes.length > 0) {
+          setClothes(storedClothes);
+        } else {
+          setClothes(DEMO_CLOTHES);
+        }
+      } catch (error) {
+        console.error('[WardrobeContext] Erreur hydratation:', error);
+        setClothes(DEMO_CLOTHES);
+      }
+      setIsHydrated(true);
+    };
+
+    hydrateWardrobe();
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    saveClothes(clothes).catch((error) => {
+      console.error('[WardrobeContext] Erreur sauvegarde:', error);
+    });
+  }, [clothes, isHydrated]);
+
+  const addCloth = (cloth) => {
+    setClothes((prev) => [...prev, { ...cloth, id: Date.now().toString() }]);
+  };
+
+  const removeCloth = (id) => {
+    setClothes((prev) => prev.filter((c) => c.id !== id));
+  };
+
   return (
     <WardrobeContext.Provider value={{ clothes, addCloth, removeCloth }}>
       {children}
